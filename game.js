@@ -1,6 +1,7 @@
 const KEYS = {
     LEFT: 37,
-    RIGHT: 39
+    RIGHT: 39,
+    SPACE: 32
 };
 
 let game = {
@@ -22,7 +23,9 @@ let game = {
     },
     setEvents() {
         window.addEventListener("keydown", e => {
-            if (e.keyCode === KEYS.LEFT || e.keyCode === KEYS.RIGHT) {
+            if (e.keyCode === KEYS.SPACE) {
+                this.platform.fire();
+            } else if (e.keyCode === KEYS.LEFT || e.keyCode === KEYS.RIGHT) {
                 this.platform.start(e.keyCode);
         }
     });
@@ -48,7 +51,7 @@ preload(callback) {
 },
 create()  {
     for (let row = 0; row < this.rows; row++) {
-        for (let col =0; col < this.cols; col++) {
+        for (let col = 0; col < this.cols; col++) {
             this.blocks.push({
                 x: 64 * col + 65,
                 y: 24 * row + 35
@@ -58,13 +61,14 @@ create()  {
 },
 update() {
     this.platform.move();
+    this.ball.move();
 },
 run() {
     window.requestAnimationFrame(() => {
         this.update();
         this.render();
         this.run();
-    })
+    });
 },
 render() {
     this.ctx.drawImage(this.sprites.background, 0, 0);
@@ -88,10 +92,20 @@ start: function() {
 };
 
 game.ball = {
+    dy: 0,
+    velocity: 3,
     x: 320,
     y: 280,
     width: 20,
-    height: 20
+    height: 20,
+    start() {
+        this.dy = -this.velocity;
+    },
+    move() {
+        if (this.dy) {
+            this.y += this.dy;
+        }
+    }
 };
 
 game.platform = {
@@ -99,6 +113,13 @@ game.platform = {
     dx: 0,
     x: 280,
     y: 300,
+    ball: game.ball,
+    fire() {
+        if (this.ball) {
+            this.ball.start();
+            this.ball = null;
+        }
+    },
     start(direction) {
         if (direction === KEYS.LEFT) {
             this.dx = -this.velocity;
@@ -112,7 +133,9 @@ game.platform = {
     move() {
         if (this.dx) {
             this.x += this.dx;
-            game.ball.x += this.dx;
+            if (this.ball) {
+                this.ball.x += this.dx;
+            }
         }
     }
 };
