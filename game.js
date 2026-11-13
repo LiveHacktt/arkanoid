@@ -5,6 +5,7 @@ const KEYS = {
 };
 
 let game = {
+    running: true,
     ctx: null,
     platform: null,
     ball: null,
@@ -95,11 +96,13 @@ let game = {
     },
 
     run() {
-        window.requestAnimationFrame(() => {
-            this.update();
-            this.render();
-            this.run();
-        });
+        if (this.running) {
+            window.requestAnimationFrame(() => {
+                this.update();
+                this.render();
+                this.run();
+            });
+        }
     },
 
     render() {
@@ -204,7 +207,9 @@ game.ball = {
             this.y = 0;
             this.dy = this.velocity;
         } else if (ballBottom > worldBottom) {
-            console.log("game over");
+            game.running = false;
+            alert("Mäng läbi — sa kaotasid!");
+            window.location.reload();
         }
     },
 
