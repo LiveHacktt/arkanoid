@@ -15,6 +15,7 @@ let game = {
     cols: 8,
     width: 640,
     height: 360,
+
     sprites: {
         background: null,
         ball: null,
@@ -22,7 +23,11 @@ let game = {
         block: null
     },
 
-    init: function () {
+    sounds: {
+        bump: null
+    },
+
+    init() {
         this.ctx = document.getElementById("mycanvas").getContext("2d");
         this.setEvents();
     },
@@ -44,20 +49,46 @@ let game = {
     preload(callback) {
         let loaded = 0;
         let required = Object.keys(this.sprites).length;
+        required += Object.keys(this.sounds).length;
 
-        let onImageLoad = () => {
+        let onResourceLoad = () => {
             ++loaded;
             if (loaded >= required) {
                 callback();
             }
         };
 
+        this.preloadSprites(onResourceLoad);
+        this.preloadAudio(onResourceLoad);
+    },
+
+    preloadSprites(onResourceLoad) {
         for (let key in this.sprites) {
             this.sprites[key] = new Image();
             this.sprites[key].src = "img/" + key + ".png";
-            this.sprites[key].addEventListener("load", onImageLoad);
+            this.sprites[key].addEventListener("load", onResourceLoad);
         }
     },
+
+    preloadAudio(onResourceLoad) {
+        for (let key in this.sounds) {
+            this.sounds[key] = new Audio("sounds/" + key + ".mp3");
+            this.sounds[key].addEventListener(
+                "canplaythrough",
+                onResourceLoad,
+                { once: true }
+            );
+        }
+    },
+
+   playSound() {
+    const sound = new Audio("./sounds/bump.mp3");
+    sound.volume = 1;
+
+    sound.play()
+        .then(() => console.log("Heli käivitus"))
+        .catch(error => console.error("Heli viga:", error));
+},
 
     create() {
         for (let row = 0; row < this.rows; row++) {
@@ -95,6 +126,7 @@ let game = {
             if (block.active && this.ball.collide(block)) {
                 this.ball.bumpBlock(block);
                 this.addScore();
+                this.playSound();
             }
         }
     },
@@ -102,6 +134,7 @@ let game = {
     collidePlatform() {
         if (this.ball.collide(this.platform)) {
             this.ball.bumpPlatform(this.platform);
+            this.playSound();
         }
     },
 
@@ -140,7 +173,7 @@ let game = {
         }
     },
 
-    start: function () {
+    start() {
         this.init();
         this.preload(() => {
             this.create();
@@ -216,12 +249,15 @@ game.ball = {
         if (ballLeft < worldLeft) {
             this.x = 0;
             this.dx = this.velocity;
+            game.playSound();
         } else if (ballRight > worldRight) {
             this.x = worldRight - this.width;
             this.dx = -this.velocity;
+            game.playSound();
         } else if (ballTop < worldTop) {
             this.y = 0;
             this.dy = this.velocity;
+            game.playSound();
         } else if (ballBottom > worldBottom) {
             game.end("Mäng läbi — sa kaotasid!");
         }
