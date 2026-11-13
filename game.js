@@ -29,7 +29,13 @@ let game = {
 
     init() {
         this.ctx = document.getElementById("mycanvas").getContext("2d");
+        this.setTextFont();
         this.setEvents();
+    },
+
+    setTextFont() {
+        this.ctx.font = "20px Arial";
+        this.ctx.fillStyle = "#FFFFFF";
     },
 
     setEvents() {
@@ -81,14 +87,14 @@ let game = {
         }
     },
 
-   playSound() {
-    const sound = new Audio("./sounds/bump.mp3");
-    sound.volume = 1;
+    playSound() {
+        const sound = new Audio("./sounds/bump.mp3");
+        sound.volume = 1;
 
-    sound.play()
-        .then(() => console.log("Heli käivitus"))
-        .catch(error => console.error("Heli viga:", error));
-},
+        sound.play().catch(error => {
+            console.log("Heli ei saanud käivitada:", error);
+        });
+    },
 
     create() {
         for (let row = 0; row < this.rows; row++) {
@@ -163,6 +169,7 @@ let game = {
         );
         this.ctx.drawImage(this.sprites.platform, this.platform.x, this.platform.y);
         this.renderBlocks();
+        this.ctx.fillText("Score: " + this.score, 15, 20);
     },
 
     renderBlocks() {
