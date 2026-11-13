@@ -17,7 +17,7 @@ let game = {
         background: null,
         ball: null,
         platform: null,
-        block: null,
+        block: null
     },
 
     init: function () {
@@ -34,7 +34,7 @@ let game = {
             }
         });
 
-        window.addEventListener("keyup", e => {
+        window.addEventListener("keyup", () => {
             this.platform.stop();
         });
     },
@@ -64,23 +64,26 @@ let game = {
                     width: 60,
                     height: 20,
                     x: 64 * col + 65,
-                    y: 24 * row + 35
+                    y: 24 * row + 35,
+                    active: true
                 });
             }
         }
     },
 
     update() {
+        this.collideBlocks();
+        this.collidePlatform();
         this.platform.move();
         this.ball.move();
+    },
 
+    collideBlocks() {
         for (let block of this.blocks) {
-            if (this.ball.collide(block)) {
+            if (block.active && this.ball.collide(block)) {
                 this.ball.bumpBlock(block);
             }
         }
-
-        this.collidePlatform();
     },
 
     collidePlatform() {
@@ -116,7 +119,9 @@ let game = {
 
     renderBlocks() {
         for (let block of this.blocks) {
-            this.ctx.drawImage(this.sprites.block, block.x, block.y);
+            if (block.active) {
+                this.ctx.drawImage(this.sprites.block, block.x, block.y);
+            }
         }
     },
 
@@ -161,10 +166,12 @@ game.ball = {
         let x = this.x + this.dx;
         let y = this.y + this.dy;
 
-        if (x + this.width > element.x &&
+        if (
+            x + this.width > element.x &&
             x < element.x + element.width &&
             y + this.height > element.y &&
-            y < element.y + element.height) {
+            y < element.y + element.height
+        ) {
             return true;
         }
 
@@ -173,6 +180,7 @@ game.ball = {
 
     bumpBlock(block) {
         this.dy *= -1;
+        block.active = false;
     },
 
     bumpPlatform(platform) {
